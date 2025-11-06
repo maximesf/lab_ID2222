@@ -7,9 +7,11 @@ class Shingling:
     k: int
     shingle: list[str]
     hashShingle: list[str]
+    removeCaracter: list[str]
 
     def __init__(self, k: int = 1) -> None:
         self.k = k
+        self.removeCaracter = '()+=-_!,;.:/?'
     
     def kShingling(self, csvFile: str) -> list[str]:
         oneShingle = []
@@ -20,6 +22,12 @@ class Shingling:
             #print(oneShingle)
         text = oneShingle[0]
         kShingle = []
+
+        text = text.lower()
+        
+        for i in range(len(self.removeCaracter)):
+            text = text.replace(self.removeCaracter[i],"")
+
         for i in range(len(text)):
             if(i+self.k>len(text)):
                 self.shingle = kShingle
@@ -123,6 +131,7 @@ class LocalSensitiveHash:
                 
                 if(h.md5(band1.encode()).hexdigest()==h.md5(band2.encode()).hexdigest()):
                     similarities += 1
+                    print("similarity found")
             print(f"similarities = {similarities/self.band}")
             if(similarities/self.band >= self.threshold):
                 return 1
@@ -133,24 +142,24 @@ class LocalSensitiveHash:
             print("Wrong size")
             return -1
 
-LSHasher = LocalSensitiveHash(5,0.8) 
+LSHasher = LocalSensitiveHash(25,0.8) 
 estimator = CompareSignatures()
 miniHasher = MinHashing()
 comparator = CompareSets()
 
 fiveShingler = Shingling(3)
 #kShingle = fiveShingler.kShingling('test.csv')
-hashList = fiveShingler.uniqueHashShingling('test.csv')
+#hashList = fiveShingler.uniqueHashShingling('test.csv')
 #print(f"len = {len(hashList)}")
 hashShingle = fiveShingler.uniqueHashShingling('test.csv')
-test3 = fiveShingler.uniqueHashShingling('test2.csv')
+test3 = fiveShingler.uniqueHashShingling('test4.csv')
 #print(kShingle)
 #print(hashShingle)
 
 similarity = comparator.getJaccardSim(hashShingle,test3)
-signature = miniHasher.buildSignature(hashShingle,test3,10000)
+signature = miniHasher.buildSignature(hashShingle,test3,100)
 estimate = estimator.computeEstimateSimilarity(signature)
-print(f"longueur de la signature {len(signature)}")
+#print(f"longueur de la signature {len(signature)}")
 retour = LSHasher.lookForCandidates(signature)
 print(f"r = {LSHasher.r}, retour de LSH {retour}")
 
