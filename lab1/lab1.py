@@ -1,6 +1,7 @@
 import numpy as np
 import csv
 import hashlib as h
+import json
 
 class Shingling:
     k: int
@@ -44,7 +45,6 @@ class Shingling:
         #print(kShingle)
         kShingle = np.unique(kShingle)
         for word in kShingle:
-            res = h.md5(word.encode())
             hashShingle.append(h.md5(word.encode()).hexdigest())
         self.hashShingle = hashShingle
         return hashShingle
@@ -102,11 +102,43 @@ class CompareSignatures:
         
         return np.sum(y)/len(y)
     
+class LocalSensitiveHash:
+    band: int
+    r: int
+    threshold: int
+
+    def __init__(self, band : int, threshold : int) -> None:
+        self.band = band
+        self.threshold = threshold
+
+    def lookForCandidates(self,signature,col1 : int = 0,col2 : int = 1) -> float:
+        
+        self.r = int(len(signature)/self.band)
+        similarities = 0
+        if(self.r * self.band == len(signature)):
+            signature = signature.T
+            for i in range(self.band):
+                band1 = str(signature[col1][i:i+self.r])
+                band2 = str(signature[col2][i:i+self.r])
+                
+                if(h.md5(band1.encode()).hexdigest()==h.md5(band2.encode()).hexdigest()):
+                    similarities += 1
+            print(f"similarities = {similarities/self.band}")
+            if(similarities/self.band >= self.threshold):
+                return 1
+            else:
+                return 0
+            
+        else:
+            print("Wrong size")
+            return -1
+
+LSHasher = LocalSensitiveHash(5,0.8) 
 estimator = CompareSignatures()
 miniHasher = MinHashing()
 comparator = CompareSets()
 
-fiveShingler = Shingling(5)
+fiveShingler = Shingling(3)
 #kShingle = fiveShingler.kShingling('test.csv')
 hashList = fiveShingler.uniqueHashShingling('test.csv')
 #print(f"len = {len(hashList)}")
@@ -116,8 +148,12 @@ test3 = fiveShingler.uniqueHashShingling('test2.csv')
 #print(hashShingle)
 
 similarity = comparator.getJaccardSim(hashShingle,test3)
-signature = miniHasher.buildSignature(hashShingle,test3,100000)
+signature = miniHasher.buildSignature(hashShingle,test3,10000)
 estimate = estimator.computeEstimateSimilarity(signature)
+print(f"longueur de la signature {len(signature)}")
+retour = LSHasher.lookForCandidates(signature)
+print(f"r = {LSHasher.r}, retour de LSH {retour}")
+
 #print(signature)
 print(similarity)
 print(estimate)
