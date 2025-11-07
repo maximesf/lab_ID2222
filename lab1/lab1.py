@@ -11,7 +11,7 @@ class Shingling:
 
     def __init__(self, k: int = 1) -> None:
         self.k = k
-        self.removeCaracter = '()+=-_!,;.:/?'
+        self.removeCaracter = '()+=-_!,;.:/?"'
     
     def kShingling(self, csvFile: str) -> list[str]:
         oneShingle = []
@@ -151,13 +151,13 @@ fiveShingler = Shingling(3)
 #kShingle = fiveShingler.kShingling('test.csv')
 #hashList = fiveShingler.uniqueHashShingling('test.csv')
 #print(f"len = {len(hashList)}")
-hashShingle = fiveShingler.uniqueHashShingling('test.csv')
-test3 = fiveShingler.uniqueHashShingling('test4.csv')
+hashShingle = fiveShingler.uniqueHashShingling('1.csv')
+test3 = fiveShingler.uniqueHashShingling('2.csv')
 #print(kShingle)
 #print(hashShingle)
 
 similarity = comparator.getJaccardSim(hashShingle,test3)
-signature = miniHasher.buildSignature(hashShingle,test3,100)
+signature = miniHasher.buildSignature(hashShingle,test3,10000)
 estimate = estimator.computeEstimateSimilarity(signature)
 #print(f"longueur de la signature {len(signature)}")
 retour = LSHasher.lookForCandidates(signature)
