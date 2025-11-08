@@ -1,16 +1,17 @@
 import numpy as np
 import csv
 import hashlib as h
-import json
 
 class Shingling:
     k: int
     shingle: list[str]
     hashShingle: list[str]
     removeCaracter: list[str]
+    word: bool
 
-    def __init__(self, k: int = 1) -> None:
+    def __init__(self, k: int = 1, word = False) -> None:
         self.k = k
+        self.word = word
         self.removeCaracter = '()+=-_!,;.:/?"'
     
     def kShingling(self, csvFile: str) -> list[str]:
@@ -28,14 +29,28 @@ class Shingling:
         for i in range(len(self.removeCaracter)):
             text = text.replace(self.removeCaracter[i],"")
 
-        for i in range(len(text)):
-            if(i+self.k>len(text)):
-                self.shingle = kShingle
-                return kShingle
-            key = ''
-            for j in range(self.k):
-                key += text[i+j]
-            kShingle.append(key)
+        if(self.word):
+            wordList = text.split(" ")
+            for i in range(len(wordList)):
+                if(i+self.k>len(wordList)):
+                    self.shingle = kShingle
+                    #print(kShingle)
+                    return kShingle
+                key = ''
+                for j in range(self.k):
+                    key += wordList[i+j] + ' '
+                key = key[:len(key)-1]
+                kShingle.append(key)
+        else:
+            for i in range(len(text)):
+                if(i+self.k>len(text)):
+                    self.shingle = kShingle
+                    #print(kShingle)
+                    return kShingle
+                key = ''
+                for j in range(self.k):
+                    key += text[i+j]
+                kShingle.append(key)
         
         
     def hashShingling(self, csvFile: str) -> list[int]:
@@ -147,12 +162,12 @@ estimator = CompareSignatures()
 miniHasher = MinHashing()
 comparator = CompareSets()
 
-fiveShingler = Shingling(3)
+fiveShingler = Shingling(3,True)
 #kShingle = fiveShingler.kShingling('test.csv')
 #hashList = fiveShingler.uniqueHashShingling('test.csv')
 #print(f"len = {len(hashList)}")
-hashShingle = fiveShingler.uniqueHashShingling('1.csv')
-test3 = fiveShingler.uniqueHashShingling('2.csv')
+hashShingle = fiveShingler.uniqueHashShingling('test.csv')
+test3 = fiveShingler.uniqueHashShingling('test2.csv')
 #print(kShingle)
 #print(hashShingle)
 
