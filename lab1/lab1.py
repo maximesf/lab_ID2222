@@ -1,6 +1,8 @@
 import numpy as np
 import csv
 import hashlib as h
+import matplotlib.pyplot as plt
+import time
 
 class Shingling:
     k: int
@@ -86,7 +88,7 @@ class CompareSets:
         union = len(np.unique(set1 + set2))
         return inter/union
     
-class MinHashing2:
+class MinHashing:
     def __init__(self) -> None:
         print('MinHashing class')
         
@@ -162,12 +164,12 @@ estimator = CompareSignatures()
 miniHasher = MinHashing()
 comparator = CompareSets()
 
-fiveShingler = Shingling(3,True)
+fiveShingler = Shingling(10,False)
 #kShingle = fiveShingler.kShingling('test.csv')
 #hashList = fiveShingler.uniqueHashShingling('test.csv')
 #print(f"len = {len(hashList)}")
-hashShingle = fiveShingler.uniqueHashShingling('test.csv')
-test3 = fiveShingler.uniqueHashShingling('test2.csv')
+hashShingle = fiveShingler.uniqueHashShingling('1.csv')
+test3 = fiveShingler.uniqueHashShingling('2.csv')
 #print(kShingle)
 #print(hashShingle)
 
@@ -179,6 +181,20 @@ for i in range(2,8):
 #print(f"longueur de la signature {len(signature)}")
 retour = LSHasher.lookForCandidates(signature)
 print(f"r = {LSHasher.r}, retour de LSH {retour}")
+
+similarity = comparator.getJaccardSim(hashShingle,test3)
+compute = []
+permuts = [10**i for i in range(2,4)]
+for i in permuts:
+    e = time.time()
+    signature = miniHasher.buildSignature(hashShingle,test3,i)
+    estimate = estimator.computeEstimateSimilarity(signature)
+    compute.append((e-time.time())*1000)
+
+plt.scatter(i,compute)
+plt.xlabel("number of permutation")
+plt.ylabel("time in ms")
+plt.show()
 
 #print(signature)
 print(similarity)
