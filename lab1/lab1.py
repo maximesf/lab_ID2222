@@ -86,7 +86,7 @@ class CompareSets:
         union = len(np.unique(set1 + set2))
         return inter/union
     
-class MinHashing:
+class MinHashing2:
     def __init__(self) -> None:
         print('MinHashing class')
         
@@ -172,8 +172,10 @@ test3 = fiveShingler.uniqueHashShingling('test2.csv')
 #print(hashShingle)
 
 similarity = comparator.getJaccardSim(hashShingle,test3)
-signature = miniHasher.buildSignature(hashShingle,test3,10000)
-estimate = estimator.computeEstimateSimilarity(signature)
+for i in range(2,8):
+    e = time.time()
+    signature = miniHasher.buildSignature(hashShingle,test3,10**i)
+    estimate = estimator.computeEstimateSimilarity(signature)
 #print(f"longueur de la signature {len(signature)}")
 retour = LSHasher.lookForCandidates(signature)
 print(f"r = {LSHasher.r}, retour de LSH {retour}")
