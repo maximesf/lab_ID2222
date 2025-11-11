@@ -4,30 +4,31 @@ import hashlib as h
 import mmap
 
 class FrequentItem:
+    itemFound: np.matrix
 
     def __init__(self) -> None:
         print("Frequent Item Finder")
     
-    #set is a matrix not a list rework this function
-    def findSingletons(self, set: list[any],threshorld: int) -> list[any]:
-        uniqueItems = np.unique(set)
+    def findSingletons(self, set: np.matrix,threshold: int) -> list[any]:
+        temp = []
+        for subset in set:
+            temp = np.hstack((temp,np.unique(subset)))
+        uniqueItems = np.unique(temp)
         items = []
         for i,item in enumerate(uniqueItems):
-            idx = (set == item)
-            if(np.sum(idx)/len(set)>threshorld):
-                items.append(item)
+            sum = 0
+            for j,subset in enumerate(set):
+                idx = (subset == item)
+                sum += np.sum(idx)
+            if(sum/len(set)>=threshold):
+                    items.append(item)
         return items
     
     def buildCandidates(self, singletons: list[any], multiplons: np.matrix) -> list[any]:
         candidates = []
         for set in multiplons:
             for single in singletons:
-                if(np.isin(single,set)):
-                    print("do nothing")
-                    print(f" set = {set}, single = {single}")
-                else:
-                    print(f" set = {set}, single = {single}, isList ? = {isinstance(set, list)}")
-
+                if(np.isin(single,set,invert=True)):
                     if isinstance(set, np.integer):
                         temp = [set, single]
                         temp.sort()
@@ -36,26 +37,48 @@ class FrequentItem:
                         temp = set
                         temp = np.hstack((temp,single))
                         temp.sort()
-                        print(temp)
                         candidates.append(temp)
-                
+      
         return np.unique(candidates,axis=0)
     
-    def frequentItemFinder(self,threshold:int,set:list[any],frequentItem : np.matrix, depth: int , singletons : list[any]):
+    #initialize frequentItem with singletons
+    #each subset of the initial working set should be a set and not a bag meaning that every subset contain an element exactly once
+    def getFrequentItemFinder(self,threshold:int,set: np.matrix,frequentItem : list , singletons : list[any], depth: int = 0) -> np.matrix:
         candidates = self.buildCandidates(singletons,frequentItem[depth])
-        if(len(candidates)==0):
+        print(f"candidates= {candidates}")
+        depth +=1
+        items = []
+        for i,item in enumerate(candidates):
+            sum = 0
+            for j,subset in enumerate(set):
+                mask = np.isin(subset,item)
+                if(np.sum(mask)==depth+1):
+                    sum += 1
+            if(sum/len(set)>=threshold):
+                items.append(item)
+        print(f"items that are frequent= {items}")
+        if(len(items)==0):
+            print("exting recursive loop")
+            print(frequentItem)
+            self.itemFound = frequentItem
             return frequentItem
         else:
-            for i,item in enumerate(candidates):
-            idx = (set == item)
-            if(np.sum(idx)/len(set)>threshorld):
-                items.append(item)
+            frequentItem.append(items)
+            print(f"resulting matrix= {frequentItem}")
+            self.getFrequentItemFinder(threshold,set,frequentItem,singletons,depth)
+            
 
 itemFinder = FrequentItem()
-mySet = [1,3,1,3,2,2,2,1,2,1,4,4,4,4,5,5,5,3,3]
+mySet = [[1],[3,1,2],[2,1],[1],[2,3,4],[1,4],[5,3],[1,2,3],[4,2],[1,2,3],[1,2]]
+testMatrix = [[1,2,1,1],[3,1,4],[4,4,9,1,5,7]]
 myCharSet =['a','b','ab']
 myFrequentItems =[]
+# singletonsMatrix = itemFinder.findSingletons(testMatrix,0.1)
+# print(f"testMatrix singletons {singletonsMatrix}")
 singletons = itemFinder.findSingletons(mySet,0.1)
 print(singletons)
 candidates = itemFinder.buildCandidates(singletons,singletons)
 print(f"candidates {candidates}")
+itemFinder.getFrequentItemFinder(0.1,mySet,[singletons],singletons)
+print("found")
+print(itemFinder.itemFound)
