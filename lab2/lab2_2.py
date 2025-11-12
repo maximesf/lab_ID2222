@@ -98,12 +98,14 @@
 
 import os
 from collections import defaultdict
-
+from itertools import combinations
 class Apriori:
-    def __init__(self, min_support):
+    def __init__(self, min_support, min_confidence):
         self.min_support = min_support
         self.transactions = []
         self.frequent_itemsets = {}
+        self.min_confidence = min_confidence
+        self.rules =[]
 
     def load_transactions(self, file_path):
         """Read dataset and store as list of sets."""
@@ -156,6 +158,32 @@ class Apriori:
                 self.transactions = [t for t in self.transactions if any(set(c) <= t for c in current_itemsets)]
 
     
+    def generate_rules(self):
+        #rules = []
+        for itemset in self.frequent_itemsets:
+            if len(itemset)<2:
+                continue #rule made of 2 items at least
+            subsets = [set(x) for i in range(1, len(itemset)) for x in combinations(itemset, i)]
+            for sub in subsets:
+                res = set(itemset) - sub
+                if not res:
+                    continue
+                
+                support_itemset = self.frequent_itemsets[itemset]
+                #support_sub = frequent_itemsets[tuple(sorted(sub))]
+                support_sub = self.frequent_itemsets.get(tuple(sorted(sub)), 0)#because sub is a set and the keys of the dictionary are tuples e.g ('32',)
+                if support_sub == 0:
+                    continue
+                confidence = support_itemset / support_sub
+
+                if confidence >= self.min_confidence:
+                    self.rules.append((sub,res, confidence)) #each rule is a tuple + its associated confidence
+        #return rules
+
+
+
+
+    
 
 
 # ------------------Prog principal------------------
@@ -165,13 +193,19 @@ def main():
     file_path = os.path.join(current_dir, 'T10I4D100K.dat')
 
     min_support = 1000
-    apriori = Apriori(min_support)
+    min_confidence = 0.7
+    apriori = Apriori(min_support,min_confidence)
     apriori.load_transactions(file_path)
     apriori.find_frequent_itemsets()
 
     print("\nFrequent Itemsets:")
     for itemset, support in apriori.frequent_itemsets.items():
         print(f"{itemset}: {support}")
+
+    print("\nGenerating associated rules to the frequent Itemsets found:")
+    apriori.generate_rules()
+    for antecedent, consequent, confidence in apriori.rules:
+        print(f"{antecedent} -> {consequent}, confidence = {confidence:.2f}")
 
 
 if __name__ == "__main__":
