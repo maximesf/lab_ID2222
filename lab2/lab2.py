@@ -66,7 +66,12 @@ class FrequentItem:
             frequentItem.append(items)
             print(f"resulting matrix= {frequentItem}")
             self.getFrequentItemFinder(threshold,set,frequentItem,singletons,depth)
-            
+
+    def findAssociationRules(self, set : np.matrix ,confidence : float ,interest:float) -> np.matrix:
+        for kFrequent in self.itemFound[1:]: #no need to investigate singletons
+            for j,subset in enumerate(set):
+                if()
+
 
 itemFinder = FrequentItem()
 mySet = [[1],[3,1,2],[2,1],[1],[2,3,4],[1,4],[5,3],[1,2,3],[4,2],[1,2,3],[1,2]]
