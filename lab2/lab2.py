@@ -21,8 +21,9 @@ class FrequentItem:
             for j,subset in enumerate(set):
                 idx = (subset == item)
                 sum += np.sum(idx)
-            if(sum/len(set)>=threshold):
-                    items.append(item)
+                if(sum/len(set)>=threshold):
+                        items.append(item)
+                        break
         return items
     
     def buildCandidates(self, singletons: list[any], multiplons: np.matrix) -> list[any]:
@@ -114,8 +115,6 @@ class FrequentItem:
                     #print([temp,Y+[X[i]]])
                     self.mineAssociationRules(set,temp,Y+[X[i]],rules,supportN,confidence)
 
-matrix =[]
-
 # with open("T10I4D100K.dat", "r") as f:
 #     for line in f:
 #         row = list(map(int, line.split()))
@@ -141,7 +140,9 @@ def getData(file):
             output.append(row)
     return output
 
-with open("test.dat", "r") as f:
+matrix =[]
+
+with open("dataSaves/test.dat", "r") as f:
     for line in f:
         row = list(map(int, line.split()))
         matrix.append(row)
@@ -157,44 +158,41 @@ print("=====")
 itemFinder = FrequentItem()
 mySet = [[1],[3,1,2],[2,1],[1],[2,3,4],[1,4],[5,3],[1,2,3],[4,2],[1,2,3],[1,2]]
 otherSet = [[1,2,3],[2,3],[1,2,3],[3],[2]]
-"""
-e = t.time()
+
 singletons = itemFinder.findSingletons(matrix,0.03)
 kFrequents = itemFinder.getFrequentItemFinder(0.03,matrix,[singletons],singletons)
-print((t.time()-e)*1000)
-e = t.time()
 simpleAsso = itemFinder.findSimpleAssociationRules(matrix,0.5)
-print((t.time()-e)*1000)"""
 
-# saveFrequentItemsResults("kfrequents.dat",itemFinder.itemFound)
-# saveAssociationRulesResults("associationrules.dat",simpleAsso)
-print("results saved")
+saveFrequentItemsResults(f"kfrequentssave.dat",itemFinder.itemFound)
+saveAssociationRulesResults(f"associationrulessave.dat",simpleAsso)
+
 print("=======")
 """
-timekFrequent = []
-timeAssociation = []
+print(len(matrix))
+e1 = t.time()
+singletons = itemFinder.findSingletons(matrix,0.04)
+itemFinder.getFrequentItemFinder(0.04,matrix,[singletons],singletons)
+s1 = (t.time()-e1)*1000
+e2 = t.time()
+simpleAsso = itemFinder.findSimpleAssociationRules(matrix,0.5)
+s2 = (t.time()-e2)*1000
+with open("time.dat", "a") as f:
+    f.write(f"{len(matrix)} {s1} {s2}\n")
 
-nbLines = [10**i for i in range(1,4)]
-for i in nbLines:
-    lists = getData("data/"+str(i)+".dat")
-    print(len(lists))
-    print(lists)
-    e = t.time()
-    singletons = itemFinder.findSingletons(lists,0.1)
-    kFrequents = itemFinder.getFrequentItemFinder(0.1,lists,[singletons],singletons)
-    timekFrequent.append((t.time()-e)*1000)
-    e = t.time()
-    simpleAsso = itemFinder.findSimpleAssociationRules(lists,0.5)
-    timeAssociation.append((t.time()-e)*1000)
-    print(i)
+saveFrequentItemsResults(f"kfrequents{len(matrix)}.dat",itemFinder.itemFound)
+saveAssociationRulesResults(f"associationrules{len(matrix)}.dat",simpleAsso)
 
-plt.scatter(nbLines,timekFrequent,label='kFrequent')
-plt.scatter(nbLines,timeAssociation,label='Association')
-plt.xlabel("number of lins")
+
+timeScales = np.genfromtxt("time.dat")
+print(timeScales.T)
+
+nbLines= [10**i for i in range(3,6)]
+plt.scatter(timeScales.T[0],timeScales.T[1],label='kFrequent')
+#plt.scatter(nbLines,timeScales.T[0],label='Association')
+plt.xlabel("number of lines")
 plt.ylabel("time in ms")
-plt.show()
+plt.show()"""
 
-"""
 """
 timekFrequent = []
 timeAssociation = []
@@ -221,25 +219,28 @@ plt.xlabel("threshold (%)")
 plt.ylabel("time in ms")
 plt.show()
 """
-
+"""
 timekFrequent = []
 timeAssociation = []
 
 confidence = [40,50,70,90]
 singletons = itemFinder.findSingletons(matrix,0.03)
 kFrequents = itemFinder.getFrequentItemFinder(0.03,matrix,[singletons],singletons)
+saveFrequentItemsResults(f"kfrequentsT0.03.dat",itemFinder.itemFound)
+
 for i in confidence:
     print(f'finding associations rules c={i/100}')
     e = t.time()
     simpleAsso = itemFinder.findSimpleAssociationRules(matrix,i/100)
     timeAssociation.append((t.time()-e)*1000)
-
+    saveAssociationRulesResults(f"associationrulesC{i/100}.dat",simpleAsso)
 
 plt.scatter(confidence,timeAssociation,label='Association')
 plt.xlabel("confidence (%)")
 plt.ylabel("time in ms")
 plt.show()
 
+"""
 quit()
 testMatrix = [[1,2,1,1],[3,1,4],[4,4,9,1,5,7]]
 myCharSet =['a','b','ab']
