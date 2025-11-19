@@ -11,6 +11,14 @@ class Reservoir:
         self.s = s
         self.samples = -1*np.ones(s) #initialize with minus one
         self.n = 0
+    
+    def resetSampleSize(self, newS) -> None:
+        if(newS!=None):
+            print(f"Seting new sample size to {newS}")
+            self.s = newS
+        print("Reseting samples queue")
+        self.samples = -1*np.ones(newS) #initialize with minus one
+        self.n = 0
 
     def resampleFromIncomingData(self,incomingData: np.matrix[int] ) -> None:
         for elem in incomingData:
@@ -22,6 +30,19 @@ class Reservoir:
                     index = np.random.randint(0, self.s)
                     self.samples[index] = elem
             self.n = self.n + 1
+
+"""
+
+"""
+
+class FullyDynamic:
+
+    def __init__(self,) -> None:
+        print("fully-dynamic algorithm")
+    
+    def sampleEdge(self,u,v) -> bool:
+        return False
+        
 
 reservoirTesteur = Reservoir(4)
 firstStream = [1,5,6,2]
