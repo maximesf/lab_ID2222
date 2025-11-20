@@ -41,8 +41,8 @@ print(f'samples = {reservoirTesteur.samples}, n = {reservoirTesteur.n}')
 
 """
 elem = (boolean,[u,v]) # tuple(bool,list) true = +1/ false =-1
-
-
+boolean determine if the edge should be deleted or not
+[u,v] is the edged that links the vertices
 """
 
 class TriestBase:
@@ -226,6 +226,30 @@ class TriestFullyDynamic:
     def setSamples(self,samplesList) -> None: # testing only
         self.samples = samplesList
 
+"""
+probDelete tune the proportion on "+" and "-" in element stream
+"""
 
+def getData(file : str, probDelete:float = 0):
+    output = []
+    with open(file, "r") as f:
+        for line in f:
+            row = list(map(int, line.split()))
+            boolean = False
+            if np.random.randint(1,101) <= int(100*(1-probDelete)) :
+                boolean = True
+            output.append((boolean,row))
+    return output
+
+realStream = getData('data/lab3data.txt',1/2)
+print(realStream)
+
+TFD = TriestFullyDynamic(100)
+
+
+"""
+link to data, undirected graph
+https://snap.stanford.edu/data/ca-GrQc.html
+"""
 
 
