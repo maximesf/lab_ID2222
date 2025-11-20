@@ -54,13 +54,13 @@ class TriestBase:
 
     def __init__(self,M) -> None:
         print("TriestBase algorithm")
-        self.M = M
+        self.M = M # maximum size of samples stored in samples
         self.samples = []
-        self.t = 0
-        self.tau = 0
-        self.tau_local = {}
+        self.t = 0 # number of element that went throught
+        self.tau = 0 # total number of triangles
+        self.tau_local = {} # local number of triangles
 
-    def triestBase(self, stream : list[tuple])->None:
+    def triestBase(self ,stream : list[tuple])->None:
         for elem in stream:
             if(elem[0]):
                 UV = elem[1]
@@ -69,10 +69,10 @@ class TriestBase:
                     self.samples.append(UV)
                     self.updateCounters(UV,True)
             
-    def sampleEdge(self, UV : list) -> bool:
+    def sampleEdge(self ,UV : list) -> bool:
         if(self.t <= self.M):
             return True
-        elif(np.random.randint(1, self.M + 1) <= self.t):
+        elif(np.random.randint(1, self.t + 1) <= self.M):
             index = np.random.randint(0, self.M)
             UVprime = self.samples[index]
             self.samples.pop(index)
@@ -124,6 +124,107 @@ countTriangle.triestBase(streamingEdges)
 print(countTriangle.samples)
 print(countTriangle.tau_local)
 print(countTriangle.tau)
+
+class TriestFullyDynamic:
+    M: int
+    samples: list[list]
+    t: int
+    tau: int
+    tau_local : dict
+    di : int 
+    do : int
+    s :int 
+
+    def __init__(self,M) -> None:
+        print("Triest Fully-Dynamic algorithm")
+        self.M = M # maximum size of samples stored in samples
+        self.samples = []
+        self.t = 0 # number of element that went throught
+        self.tau = 0 # total number of triangles
+        self.tau_local = {} # local number of triangles
+        self.s = 0
+        self.do = 0
+        self.di = 0
+
+    def triestFullyDynamic(self, stream : list[tuple])->None:
+        for elem in stream:
+            self.t = self.t + 1
+            if elem[0] : 
+                self.s = self.s +1
+            else: 
+                self.s = self.s -1
+            UV = elem[1]
+            if elem[0]:
+                if(self.sampleEdge(UV)):
+                    self.updateCounters(UV,True)
+            elif (index := self.samplesContain(UV)) >= 0:
+                self.updateCounters(UV,False)
+                self.samples.pop(index)
+                self.di = self.di+ 1
+            else:
+                self.do = self.do +1
+    
+    def samplesContain(self,UV) -> bool:
+        for i, sample in enumerate(self.samples):
+            if sample == UV:
+                return i
+        return -1
+    
+    def sampleEdge(self, UV : list) -> bool:
+        if self.do + self.di == 0 :
+            if(len(self.samples) < self.M):
+                self.samples.append(UV)
+                return True
+            elif(np.random.randint(1, self.t + 1) <= self.M):
+                index = np.random.randint(0, self.M)
+                ZW = self.samples[index]
+                self.updateCounters(ZW , False)
+                self.samples.pop(index)
+                self.samples.append(UV)
+                return True
+        elif (np.random.randint(1, self.di + self.do + 1) <= self.di):
+            self.samples.append(UV)
+            self.di = self.di -1
+            return True
+        else :
+            self.do = self.do -1
+            return False
+    
+    def updateCounters(self, UV : list, rule: bool) -> None:
+        interNeighbours = self.findNeighbours(UV)
+
+        if rule:
+            delta = 1
+        else:
+            delta = -1
+
+        for c in interNeighbours:
+            self.tau = self.tau + delta
+            self.tau_local[c] = self.tau_local.get(c, 0) + delta
+            self.tau_local[UV[0]] = self.tau_local.get(UV[0], 0) + delta
+            self.tau_local[UV[1]] = self.tau_local.get(UV[1], 0) + delta
+
+    def findNeighbours(self, UV : list) -> list:
+        neighboorU = []
+        neighboorV = []
+        for sample in self.samples:
+            if(np.isin(UV[0],sample)):
+                maskU = np.isin(sample,UV[0],invert=True)
+                temp =np.array(sample)
+                neighboorU.append(temp[maskU].item())
+            if(np.isin(UV[1],sample)):
+                maskV = np.isin(sample,UV[1],invert=True)
+                temp =np.array(sample)
+                neighboorV.append(temp[maskV].item())
+        inter = np.isin(neighboorU,neighboorV)
+        if(np.sum(inter)==0):
+            return []
+        else:
+            neighboorU = np.array(neighboorU)
+            return neighboorU[inter]
+    
+    def setSamples(self,samplesList) -> None: # testing only
+        self.samples = samplesList
 
 
 
