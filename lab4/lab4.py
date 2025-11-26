@@ -12,19 +12,26 @@ class SpectralClustering:
     N: int
     X: np.matrix
 
-    def __init__(self, data, sigma) -> None:
+    def __init__(self, data, sigma, dataIsGRaph, maxNode) -> None:
         self.data = np.array(data)
-        self.N = len(data)
-        self.affinity=np.empty((self.N,self.N))
         self.sigma = sigma
-        for i in range(self.N):
-            for j in range(self.N):
-                if(i==j):
-                    self.affinity[i,j]=0
-                else:
-                    self.affinity[i,j] = np.exp(-np.linalg.norm(self.data[i] - self.data[j])**2/(2*sigma**2))
+        if(dataIsGRaph):
+            self.N = maxNode
+            self.affinity=np.zeros((self.N,self.N))
+            for point in data:
+                self.affinity[point[0]-1,point[1]-1]=1
+                self.affinity[point[1]-1,point[0]-1]=1
+        else:
+            self.N = len(data)
+            self.affinity=np.empty((self.N,self.N))
+            for i in range(self.N):
+                for j in range(self.N):
+                    if(i==j):
+                        self.affinity[i,j]=0
+                    else:
+                        self.affinity[i,j] = np.exp(-np.linalg.norm(self.data[i] - self.data[j])**2/(2*sigma**2))
         print(self.affinity)
-        
+
     def buildDandL(self) -> None:
         D = np.zeros((self.N, self.N))
         diagValues = np.sum(self.affinity,axis=1) #sum rows of A
@@ -37,7 +44,9 @@ class SpectralClustering:
         eigenvalues, eigenvectors = np.linalg.eigh(self.L) #eigenvectors are column wise eigenvectors[:, i] <-> eigenvalues[i]
         
         print(f'lambdas ={eigenvalues}')
-        k = self.unicite(eigenvalues,1e-6) # u = np.unique(eigenvalues) #remove any multiplicity
+        k = self.unicite(eigenvalues,1e-6) 
+        # u = np.unique(eigenvalues) #remove any multiplicity
+        # k = len(u)
         print(f'k = {k}')
         self.Y = eigenvectors[:,self.N-k:]
 
@@ -71,23 +80,28 @@ class SpectralClustering:
 
 def getData(file : str, splitterChar: str):
     output = []
+    maxNode = 0
     with open(file, "r") as f:
         for line in f:
             row = list(map(int, line.split(splitterChar)))
+            if(maxNode<row[0]):
+                maxNode=row[0]
+            if(maxNode<row[1]):
+                maxNode=row[1]
             output.append(row)
-    return output
+    return output, maxNode
 
-e1 = getData("example1.dat",",")
+e1, maxNode = getData("example1.dat",",")
 
 sigma = 0.03
 data = [[1,2],[1,3],[2,3],[2,4],[4,5],[5,6],[6,4]]
 
-test = SpectralClustering(data,sigma)
+test = SpectralClustering(data,sigma,True,6)
 test.buildDandL()
 fit = test.kMeans()
 print(fit)
 
-
+quit()
 clusterE1 = SpectralClustering(e1,0.1)
 clusterE1.buildDandL()
 labels = clusterE1.kMeans()
