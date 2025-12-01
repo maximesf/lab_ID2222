@@ -42,7 +42,9 @@ class SpectralClustering:
         self.L = invertedsqrtD @ self.affinity @ invertedsqrtD
         #np.linalg.eigh already normalize eigenvectors
         eigenvalues, eigenvectors = np.linalg.eigh(self.L) #eigenvectors are column wise eigenvectors[:, i] <-> eigenvalues[i]
-        
+        plt.plot(eigenvalues)
+        plt.ylabel("eigen")
+        plt.show()
         print(f'lambdas ={eigenvalues}')
         k = self.unicite(eigenvalues,1e-6) 
         # u = np.unique(eigenvalues) #remove any multiplicity
@@ -98,12 +100,13 @@ data = [[1,2],[1,3],[2,3],[2,4],[4,5],[5,6],[6,4]]
 
 test = SpectralClustering(data,sigma,True,6)
 test.buildDandL()
-fit = test.kMeans()
-print(fit)
+#fit = test.kMeans()
+#print(fit)
 
-quit()
-clusterE1 = SpectralClustering(e1,0.1)
+clusterE1 = SpectralClustering(e1,0.1,True,maxNode)
 clusterE1.buildDandL()
+quit()
+
 labels = clusterE1.kMeans()
 print(labels)
 
