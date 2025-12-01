@@ -14,6 +14,7 @@ class SpectralClustering:
     eigenValues : list
     eigenVectors : np.matrix
     k : int
+    laplacien : np.matrix
 
     def __init__(self, data, sigma, dataIsGRaph, maxNode) -> None:
         self.k = None
@@ -22,9 +23,9 @@ class SpectralClustering:
         if(dataIsGRaph):
             self.N = maxNode
             self.affinity=np.zeros((self.N,self.N))
-            for point in data:
-                self.affinity[point[0]-1,point[1]-1]=1
-                self.affinity[point[1]-1,point[0]-1]=1
+            for edge in data:
+                self.affinity[edge[0]-1,edge[1]-1]=1
+                self.affinity[edge[1]-1,edge[0]-1]=1
         else:
             self.N = len(data)
             self.affinity=np.empty((self.N,self.N))
@@ -43,9 +44,10 @@ class SpectralClustering:
             D[i][i] = value 
         self.D = D
         invertedsqrtD = np.where(D==0,0,D**(-1/2))
+        self.laplacien = D-self.affinity
         self.L = invertedsqrtD @ self.affinity @ invertedsqrtD
         #np.linalg.eigh already normalize eigenvectors
-        eigenvalues, eigenvectors = np.linalg.eigh(self.L) #eigenvectors are column wise eigenvectors[:, i] <-> eigenvalues[i]
+        eigenvalues, eigenvectors = np.linalg.eigh(self.laplacien) #eigenvectors are column wise eigenvectors[:, i] <-> eigenvalues[i]
         self.eigenValues = eigenvalues
         self.eigenVectors = eigenvectors
         
@@ -65,7 +67,7 @@ class SpectralClustering:
             if(not(self.inUnique(threshold,unique,eigenvalues[i]))):
                 unique.append(eigenvalues[i])
         print(f'unique lambdas ={unique}')
-        return len(unique)
+        return unique
 
     def inUnique(self,threshold,unique,eigenvalue)->bool:
         for u in unique:
@@ -80,22 +82,30 @@ class SpectralClustering:
         self.Y = np.array(Y)
     
     #clustering technique K-mean
-    def kMeans(self,k :int) -> list:
-        Y = self.eigenVectors[:,self.N-k:]
+    def kMeans(self) -> list:
+        Y = self.eigenVectors[:,self.N-self.k:]
         kmeans = km(n_clusters=len(Y[0])).fit(Y)
         return kmeans.labels_
 
     def plotDifsEigen(self)->None:
-        plt.plot(self.eigenValues)
+        xAxis = [i for i in range(1,self.N+1)]
+        plt.plot(xAxis,self.eigenValues)
         plt.ylabel("eigenValues")
         plt.show()
         print(f'lambdas ={self.eigenValues}')
         difs = []
+        max = 0
+        index = 1
         for i in range(len(self.eigenValues)-1):
+            if np.abs(self.eigenValues[i]-self.eigenValues[i+1])>max :
+                max = np.abs(self.eigenValues[i]-self.eigenValues[i+1])
+                index = i+1
             difs.append(np.abs(self.eigenValues[i]-self.eigenValues[i+1]))
-        plt.plot(difs)
+        plt.plot(xAxis[:self.N-1],difs)
         plt.ylabel("lambda[i]-lambda[i+1]")
         plt.show()
+        print(f'k = {index}')
+        self.k = index
 
 
 
@@ -116,17 +126,24 @@ e1, maxNode = getData("example1.dat",",")
 
 sigma = 0.03
 data = [[1,2],[1,3],[2,3],[2,4],[4,5],[5,6],[6,4]]
+customGraph = [[1,2],[1,3],[2,4],[4,5],[1,5],[2,6],[1,6],[5,7],[5,8],[2,8],[2,9],[3,9],[3,10],[9,10],
+               [9,8],[9,5],[9,6],[9,7],[10,8],[10,7],[10,6],
+               [4,11],[11,12],[11,13],[12,13],[12,14],[12,15],[12,16],[12,17],[13,16],[13,18],[13,19],
+               [14,15],[14,16],[15,13],[15,17],[15,20],[16,20],[16,17],[16,19],[16,18],[17,19],[17,20],
+               [19,20],[20,21],[21,22],[21,23],[21,24],[21,25],[22,23],[22,24],[22,25],[23,24],[23,25],
+               [24,25]]
 
 test = SpectralClustering(data,sigma,True,6)
 test.buildDandL()
 test.plotDifsEigen()
-fit = test.kMeans(2)
+fit = test.kMeans()
 print(fit)
-quit()
 
 
-clusterE1 = SpectralClustering(e1,0.1,True,maxNode)
+
+clusterE1 = SpectralClustering(customGraph,sigma,True,25)
 clusterE1.buildDandL()
+clusterE1.plotDifsEigen()
 quit()
 
 labels = clusterE1.kMeans()
