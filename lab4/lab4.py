@@ -35,7 +35,6 @@ class SpectralClustering:
                         self.affinity[i,j]=0
                     else:
                         self.affinity[i,j] = np.exp(-np.linalg.norm(self.data[i] - self.data[j])**2/(2*sigma**2))
-        print(self.affinity)
 
     def buildDandL(self) -> None:
         D = np.zeros((self.N, self.N))
@@ -83,11 +82,11 @@ class SpectralClustering:
     
     #clustering technique K-mean
     def kMeans(self) -> list:
-        Y = self.eigenVectors[:,self.N-self.k:]
-        kmeans = km(n_clusters=len(Y[0])).fit(Y)
+        Y = self.eigenVectors[:,:self.k]
+        kmeans = km(n_clusters=self.k).fit(Y)
         return kmeans.labels_
 
-    def plotDifsEigen(self)->None:
+    def plotDifsEigen(self,maxClusters)->None:
         xAxis = [i for i in range(1,self.N+1)]
         plt.plot(xAxis,self.eigenValues)
         plt.ylabel("eigenValues")
@@ -96,16 +95,18 @@ class SpectralClustering:
         difs = []
         max = 0
         index = 1
-        for i in range(len(self.eigenValues)-1):
+        #dif = np.abs(self.eigenValues[:self.N-1] - self.eigenValues[1:])
+        for i in range(maxClusters):
             if np.abs(self.eigenValues[i]-self.eigenValues[i+1])>max :
                 max = np.abs(self.eigenValues[i]-self.eigenValues[i+1])
                 index = i+1
             difs.append(np.abs(self.eigenValues[i]-self.eigenValues[i+1]))
-        plt.plot(xAxis[:self.N-1],difs)
+        plt.plot(xAxis[:maxClusters],difs)
         plt.ylabel("lambda[i]-lambda[i+1]")
         plt.show()
         print(f'k = {index}')
         self.k = index
+        
 
 
 
@@ -115,6 +116,7 @@ def getData(file : str, splitterChar: str):
     with open(file, "r") as f:
         for line in f:
             row = list(map(int, line.split(splitterChar)))
+            row[:2]
             if(maxNode<row[0]):
                 maxNode=row[0]
             if(maxNode<row[1]):
@@ -122,7 +124,7 @@ def getData(file : str, splitterChar: str):
             output.append(row)
     return output, maxNode
 
-e1, maxNode = getData("example1.dat",",")
+e1, maxNode = getData("example2.dat",",")
 
 sigma = 0.03
 data = [[1,2],[1,3],[2,3],[2,4],[4,5],[5,6],[6,4]]
@@ -134,19 +136,39 @@ customGraph = [[1,2],[1,3],[2,4],[4,5],[1,5],[2,6],[1,6],[5,7],[5,8],[2,8],[2,9]
                [24,25]]
 
 test = SpectralClustering(data,sigma,True,6)
+course = SpectralClustering(customGraph,sigma,True,25)
+clusterE1 = SpectralClustering(e1,sigma,True,maxNode)
+fix, axes = plt.subplots(nrows=1, ncols=3)
+axes[0].imshow(test.affinity)
+axes[1].imshow(course.affinity)
+axes[2].imshow(clusterE1.affinity)
+plt.tight_layout()
+plt.show()
+
 test.buildDandL()
-test.plotDifsEigen()
+test.plotDifsEigen(5)
 fit = test.kMeans()
 print(fit)
 
 
 
-clusterE1 = SpectralClustering(customGraph,sigma,True,25)
-clusterE1.buildDandL()
-clusterE1.plotDifsEigen()
-quit()
 
+
+
+
+course.buildDandL()
+course.plotDifsEigen(20)
+fit = course.kMeans()
+print(fit)
+
+
+
+clusterE1.buildDandL()
+clusterE1.plotDifsEigen(int(maxNode/2))
 labels = clusterE1.kMeans()
+print(len(labels))
 print(labels)
+
+
 
     
