@@ -107,9 +107,6 @@ class SpectralClustering:
         print(f'k = {index}')
         self.k = index
         
-
-
-
 def getData(file : str, splitterChar: str):
     output = []
     maxNode = 0
@@ -124,7 +121,8 @@ def getData(file : str, splitterChar: str):
             output.append(row)
     return output, maxNode
 
-e1, maxNode = getData("example2.dat",",")
+e1, maxNode1 = getData("example1.dat",",")
+e2, maxNode2 = getData("example2.dat",",")
 
 sigma = 0.03
 data = [[1,2],[1,3],[2,3],[2,4],[4,5],[5,6],[6,4]]
@@ -135,40 +133,48 @@ customGraph = [[1,2],[1,3],[2,4],[4,5],[1,5],[2,6],[1,6],[5,7],[5,8],[2,8],[2,9]
                [19,20],[20,21],[21,22],[21,23],[21,24],[21,25],[22,23],[22,24],[22,25],[23,24],[23,25],
                [24,25]]
 
-test = SpectralClustering(data,sigma,True,6)
-course = SpectralClustering(customGraph,sigma,True,25)
-clusterE1 = SpectralClustering(e1,sigma,True,maxNode)
-fix, axes = plt.subplots(nrows=1, ncols=3)
-axes[0].imshow(test.affinity)
-axes[1].imshow(course.affinity)
-axes[2].imshow(clusterE1.affinity)
-plt.tight_layout()
-plt.show()
+test = SpectralClustering(data,None,True,6)
+course = SpectralClustering(customGraph,None,True,25)
 
+"""
 test.buildDandL()
 test.plotDifsEigen(5)
 fit = test.kMeans()
 print(fit)
-
-
-
-
-
-
 
 course.buildDandL()
 course.plotDifsEigen(20)
 fit = course.kMeans()
 print(fit)
 
+fix, axes = plt.subplots(nrows=1, ncols=2)
+axes[0].imshow(course.affinity)
+axes[1].imshow(test.affinity)
+plt.show()
+"""
 
-
+e=t.time()
+clusterE1 = SpectralClustering(e1,None,True,maxNode1)
 clusterE1.buildDandL()
-clusterE1.plotDifsEigen(int(maxNode/2))
+clusterE1.plotDifsEigen(int(maxNode1/2))
 labels = clusterE1.kMeans()
-print(len(labels))
-print(labels)
+s = (t.time()-e)*1000
+print(f'calculation time = {s}')
+print(f'classification = {labels}')
 
+e=t.time()
+clusterE2 = SpectralClustering(e2,None,True,maxNode2)
+clusterE2.buildDandL()
+clusterE2.plotDifsEigen(int(maxNode2/2))
+labels = clusterE2.kMeans()
+s = (t.time()-e)*1000
+print(f'calculation time = {s}')
+print(f'classification = {labels}')
 
-
-    
+fix, axes = plt.subplots(nrows=1, ncols=2)
+fix.suptitle('Affinity Matrix')
+axes[0].imshow(clusterE1.affinity)
+axes[0].set_title('example1.dat')
+axes[1].imshow(clusterE2.affinity)
+axes[1].set_title('example2.dat')
+plt.show()
