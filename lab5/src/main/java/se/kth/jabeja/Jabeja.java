@@ -9,6 +9,7 @@ import se.kth.jabeja.rand.RandNoGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.math.*;
 
 public class Jabeja {
   final static Logger logger = Logger.getLogger(Jabeja.class);
@@ -18,6 +19,7 @@ public class Jabeja {
   private int numberOfSwaps;
   private int round;
   private float T;
+  private flaot alpha;
   private boolean resultFileCreated = false;
 
   //-------------------------------------------------------------------
@@ -27,9 +29,9 @@ public class Jabeja {
     this.round = 0;
     this.numberOfSwaps = 0;
     this.config = config;
+    this.alpha = config.getAlpha();
     this.T = config.getTemperature();
   }
-  ed,eo
 
   //-------------------------------------------------------------------
   public void startJabeja() throws IOException {
@@ -88,7 +90,19 @@ public class Jabeja {
     double highestBenefit = 0;
 
     // TODO
-
+    for (Integer nodeqId : nodes) {
+      Node nodeq = entireGraph.get(nodeqId);
+      int dpp = getDegree(nodep,nodep.getColor());
+      int dqq = getDegree(nodeq,nodeq.getColor());
+      float oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
+      int dpq = getDegree(nodep,nodeq.getColor());
+      int dqp = getDegree(nodeq,nodep.getColor());
+      float newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
+      if ((newPos*T>oldPos) && (newPos>highestBenefit)) {
+        bestPartner = nodeq;
+        highestBenefit = newPos;
+      }
+    }
     return bestPartner;
   }
 
