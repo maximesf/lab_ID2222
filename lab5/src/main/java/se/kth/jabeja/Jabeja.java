@@ -69,17 +69,32 @@ public class Jabeja {
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.LOCAL) {
       // swap with random neighbors
+      partner = findPartner(nodeId,nodep.getNeighbours());
       // TODO
     }
 
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) {
       // if local policy fails then randomly sample the entire graph
+      partner = findPartner(nodeId,getSample(nodeId));
       // TODO
     }
 
     // swap the colors
     // TODO
+    if(partner!=null){
+      int dpp = getDegree(nodep,nodep.getColor());
+      int dqq = getDegree(partner,partner.getColor());
+      float oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
+      int dpq = getDegree(nodep,partner.getColor());
+      int dqp = getDegree(partner,nodep.getColor());
+      float newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
+      if ((newPos*T>oldPos)) {
+        int tempColorSwap = partner.getColor();
+        partner.setColor(nodep.getColor());
+        nodep.setColor(tempColorSwap);
+      }
+    }
   }
 
   public Node findPartner(int nodeId, Integer[] nodes){
