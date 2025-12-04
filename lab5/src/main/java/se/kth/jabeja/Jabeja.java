@@ -20,6 +20,7 @@ public class Jabeja {
   private int round;
   private float T;
   private float alpha;
+  private float delta;
   private boolean resultFileCreated = false;
 
   //-------------------------------------------------------------------
@@ -31,6 +32,7 @@ public class Jabeja {
     this.config = config;
     this.alpha = config.getAlpha();
     this.T = config.getTemperature();
+    this.delta = config.getDelta();
   }
 
   //-------------------------------------------------------------------
@@ -96,7 +98,12 @@ public class Jabeja {
         int tempColorSwap = partner.getColor();
         partner.setColor(nodep.getColor());
         nodep.setColor(tempColorSwap);
+        numberOfSwaps++;
       }
+    }
+    T = T-delta;
+    if(T<1){
+      T=1;
     }
   }
 
