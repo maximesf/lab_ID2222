@@ -19,7 +19,7 @@ public class Jabeja {
   private int numberOfSwaps;
   private int round;
   private float T;
-  private flaot alpha;
+  private float alpha;
   private boolean resultFileCreated = false;
 
   //-------------------------------------------------------------------
@@ -69,7 +69,10 @@ public class Jabeja {
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.LOCAL) {
       // swap with random neighbors
-      partner = findPartner(nodeId,nodep.getNeighbours());
+      ArrayList<Integer> rndIds = nodep.getNeighbours();
+      Integer[] ids = new Integer[rndIds.size()];
+      rndIds.toArray(ids);
+      partner = findPartner(nodeId,ids);
       // TODO
     }
 
@@ -85,10 +88,10 @@ public class Jabeja {
     if(partner!=null){
       int dpp = getDegree(nodep,nodep.getColor());
       int dqq = getDegree(partner,partner.getColor());
-      float oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
+      double oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
       int dpq = getDegree(nodep,partner.getColor());
       int dqp = getDegree(partner,nodep.getColor());
-      float newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
+      double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
       if ((newPos*T>oldPos)) {
         int tempColorSwap = partner.getColor();
         partner.setColor(nodep.getColor());
@@ -109,10 +112,10 @@ public class Jabeja {
       Node nodeq = entireGraph.get(nodeqId);
       int dpp = getDegree(nodep,nodep.getColor());
       int dqq = getDegree(nodeq,nodeq.getColor());
-      float oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
+      double oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
       int dpq = getDegree(nodep,nodeq.getColor());
       int dqp = getDegree(nodeq,nodep.getColor());
-      float newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
+      double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
       if ((newPos*T>oldPos) && (newPos>highestBenefit)) {
         bestPartner = nodeq;
         highestBenefit = newPos;
