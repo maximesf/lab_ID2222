@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.*;
 import java.math.*;
 
+
 public class Jabeja {
   final static Logger logger = Logger.getLogger(Jabeja.class);
   private final Config config;
@@ -18,9 +19,9 @@ public class Jabeja {
   private final List<Integer> nodeIds;
   private int numberOfSwaps;
   private int round;
-  private float T;
-  private float alpha;
-  private float delta;
+  private double T;
+  private double alpha;
+  final static double DELTA = 0.99;
   private boolean resultFileCreated = false;
 
   //-------------------------------------------------------------------
@@ -32,7 +33,12 @@ public class Jabeja {
     this.config = config;
     this.alpha = config.getAlpha();
     this.T = config.getTemperature();
-    this.delta = config.getDelta();
+    //this.delta = config.getDelta();
+
+    logger.info(
+    ", swaps: " + numberOfSwaps +
+    ", temperature: " + T +
+    ", delta: +" + config.getDelta());
   }
 
   //-------------------------------------------------------------------
@@ -55,7 +61,7 @@ public class Jabeja {
   private void saCoolDown(){
     // TODO for second task
     if (T > 1)
-      T -= config.getDelta();
+      T = T*0.999;
     if (T < 1)
       T = 1;
   }
@@ -94,17 +100,23 @@ public class Jabeja {
       int dpq = getDegree(nodep,partner.getColor());
       int dqp = getDegree(partner,nodep.getColor());
       double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
-      if ((newPos*T>oldPos)) {
+      // 
+      if ((newPos>oldPos)) {
         int tempColorSwap = partner.getColor();
         partner.setColor(nodep.getColor());
         nodep.setColor(tempColorSwap);
         numberOfSwaps++;
+      } else {
+        double ap = Math.exp((newPos-oldPos)/T);
+        if (ap>Math.random()) {
+          int tempColorSwap = partner.getColor();
+          partner.setColor(nodep.getColor());
+          nodep.setColor(tempColorSwap);
+          numberOfSwaps++;
+        }
       }
     }
-    T = T-delta;
-    if(T<1){
-      T=1;
-    }
+    
   }
 
   public Node findPartner(int nodeId, Integer[] nodes){
@@ -123,7 +135,7 @@ public class Jabeja {
       int dpq = getDegree(nodep,nodeq.getColor());
       int dqp = getDegree(nodeq,nodep.getColor());
       double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
-      if ((newPos*T>oldPos) && (newPos>highestBenefit)) {
+      if ((newPos>oldPos) && (newPos>highestBenefit)) {
         bestPartner = nodeq;
         highestBenefit = newPos;
       }
@@ -245,7 +257,9 @@ public class Jabeja {
     logger.info("round: " + round +
             ", edge cut:" + edgeCut +
             ", swaps: " + numberOfSwaps +
-            ", migrations: " + migrations);
+            ", migrations: " + migrations +
+            ", temperature: " + T +
+            ", delta: +" + DELTA);
 
     saveToFile(edgeCut, migrations);
   }
