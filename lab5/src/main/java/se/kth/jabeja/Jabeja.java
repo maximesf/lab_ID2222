@@ -21,7 +21,7 @@ public class Jabeja {
   private int round;
   private double T;
   private double alpha;
-  final static double DELTA = 0.99;
+  final static double DELTA = 0.9;
   private boolean resultFileCreated = false;
 
   //-------------------------------------------------------------------
@@ -32,7 +32,7 @@ public class Jabeja {
     this.numberOfSwaps = 0;
     this.config = config;
     this.alpha = config.getAlpha();
-    this.T = config.getTemperature();
+    this.T = 2;//config.getTemperature();
     //this.delta = config.getDelta();
 
     logger.info(
@@ -61,7 +61,7 @@ public class Jabeja {
   private void saCoolDown(){
     // TODO for second task
     if (T > 1)
-      T = T*0.999;
+      T = T*0.8;
     if (T < 1)
       T = 1;
   }
@@ -82,32 +82,29 @@ public class Jabeja {
       rndIds.toArray(ids);
       partner = findPartner(nodeId,ids);
       // TODO
+      logger.info("pin");
     }
 
-    if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
-            || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) {
+    if ((config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
+            || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) ){
       // if local policy fails then randomly sample the entire graph
       partner = findPartner(nodeId,getSample(nodeId));
+      logger.info("pon");
       // TODO
     }
 
     // swap the colors
     // TODO
     if(partner!=null){
-      int dpp = getDegree(nodep,nodep.getColor());
-      int dqq = getDegree(partner,partner.getColor());
-      double oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
-      int dpq = getDegree(nodep,partner.getColor());
-      int dqp = getDegree(partner,nodep.getColor());
-      double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
-      // 
-      if ((newPos>oldPos)) {
-        int tempColorSwap = partner.getColor();
-        partner.setColor(nodep.getColor());
-        nodep.setColor(tempColorSwap);
-        numberOfSwaps++;
-      } else {
-        double ap = Math.exp((newPos-oldPos)/T);
+        int dpp = getDegree(nodep,nodep.getColor());
+        int dqq = getDegree(partner,partner.getColor());
+        double oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
+        int dpq = getDegree(nodep,partner.getColor());
+        int dqp = getDegree(partner,nodep.getColor());
+        double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
+        double D = newPos-oldPos;
+        double ap = Math.exp(D/T);
+        //logger.info("acceptance = " + ap + "-- Diff = " + D);
         if (ap>Math.random()) {
           int tempColorSwap = partner.getColor();
           partner.setColor(nodep.getColor());
@@ -115,7 +112,22 @@ public class Jabeja {
           numberOfSwaps++;
         }
       }
-    }
+
+      // else {
+      //   int dpp = getDegree(nodep,nodep.getColor());
+      //   int dqq = getDegree(partner,partner.getColor());
+      //   double oldPos = Math.pow(dpp, alpha)+Math.pow(dqq, alpha);
+      //   int dpq = getDegree(nodep,partner.getColor());
+      //   int dqp = getDegree(partner,nodep.getColor());
+      //   double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
+      //   double ap = Math.exp((newPos-oldPos)/T);
+      //   if (ap>Math.random()) {
+      //     int tempColorSwap = partner.getColor();
+      //     partner.setColor(nodep.getColor());
+      //     nodep.setColor(tempColorSwap);
+      //     numberOfSwaps++;
+      //   }
+      // }
     
   }
 
@@ -135,7 +147,7 @@ public class Jabeja {
       int dpq = getDegree(nodep,nodeq.getColor());
       int dqp = getDegree(nodeq,nodep.getColor());
       double newPos = Math.pow(dpq, alpha)+Math.pow(dqp, alpha);
-      if ((newPos>oldPos) && (newPos>highestBenefit)) {
+      if  ((newPos>oldPos)&&(newPos>highestBenefit)) {
         bestPartner = nodeq;
         highestBenefit = newPos;
       }
