@@ -75,7 +75,7 @@ public class Jabeja {
    * Sample and swap algorith at node p
    * @param nodeId
    */
-  public void sampleAndSwap(int nodeId) {
+  private void sampleAndSwap(int nodeId) {
     Node partner = null;
     Node nodep = entireGraph.get(nodeId);
 
@@ -97,15 +97,15 @@ public class Jabeja {
 
     }
        // swap the colors
-    if (partner !=null){
-      int curr_colour = nodep.getColor();
-      nodep.setColor(partner.getColor());
-      partner.setColor(curr_colour);
-
-    }
-    T -= config.getDelta();
-    if (T < 1)
-        T = 1;
+    if (partner != null) {
+          int curr_colour = nodep.getColor();
+          nodep.setColor(partner.getColor());
+          partner.setColor(curr_colour);
+          numberOfSwaps++;
+        }
+    // T -= config.getDelta();
+    // if (T < 1)
+    //     T = 1;
  
    
   }
