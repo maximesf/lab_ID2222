@@ -186,7 +186,7 @@ import polars as pl
 comparator = CompareSets()
 
 df = pl.read_excel('data/EP7.xlsx')
-n = df.height
+n = 5# df.height
 sclicing = 9
 
 simMat = np.zeros((n,n))
@@ -208,7 +208,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-docs = df[:,1]
+docs = df[:5,0]
 
 sns.heatmap(simMat, annot=True, xticklabels=docs, yticklabels=docs, cmap="viridis")
 plt.title("Exact Jaccard Similarity Matrix")
