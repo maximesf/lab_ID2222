@@ -53,6 +53,7 @@ import polars as pl
 comparator = CompareSets()
 
 df = pl.read_excel('data/EP7.xlsx')
+
 """
 n =  df.height
 sclicing = 9
@@ -96,13 +97,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def plot_mep_clusters(coords, countries, epgs):
-    """
-    coords: array numpy (n, 2) issu de votre MDS
-    countries: liste des noms de pays
-    epgs: liste des groupes politiques (EPG)
-    """
     
-    # 1. Préparation des données dans un DataFrame
     df = pd.DataFrame({
         'MDS1': coords[:, 0],
         'MDS2': coords[:, 1],
@@ -110,7 +105,6 @@ def plot_mep_clusters(coords, countries, epgs):
         'EPG': epgs
     })
 
-    # --- FIGURE 1 : Groupes Politiques (EPG) ---
     plt.figure(figsize=(12, 8))
     sns.scatterplot(data=df, x='MDS1', y='MDS2', hue='EPG', 
                     palette='tab10', s=80, alpha=0.8, edgecolor='w')
@@ -118,13 +112,11 @@ def plot_mep_clusters(coords, countries, epgs):
     plt.title('MEP Clusters by Political Group (EPG)', fontsize=15, pad=20)
     plt.xlabel('Dimension 1')
     plt.ylabel('Dimension 2')
-    
-    # On place la légende à l'extérieur à droite
+
     plt.legend(title='Political Group', bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.tight_layout()
-    plt.show() # Affiche la première image
+    plt.show()
 
-    # --- FIGURE 2 : Pays (Country) ---
     plt.figure(figsize=(12, 8))
     sns.scatterplot(data=df, x='MDS1', y='MDS2', hue='Country', 
                     palette='husl', s=80, alpha=0.8, edgecolor='w')
@@ -133,37 +125,19 @@ def plot_mep_clusters(coords, countries, epgs):
     plt.xlabel('Dimension 1')
     plt.ylabel('Dimension 2')
     
-    # Légende à l'extérieur avec 2 colonnes car il y a beaucoup de pays
     plt.legend(title='Country', bbox_to_anchor=(1.05, 1), loc='upper left', ncol=2, borderaxespad=0.)
     plt.tight_layout()
-    plt.show() # Affiche la deuxième image
+    plt.show()
 
-# --- Exemple d'utilisation ---
-# plot_mep_clusters_separate(coords, subset_countries, subset_epgs)
 
 def mds(S, k=2):
-    # Imaginons une matrice déjà existante
+
     n = S.shape[0]
     diag = np.zeros((n, n)) 
-
-# On remplit la diagonale avec des 1
     np.fill_diagonal(diag, 1)
 
-
     S = S+S.T + diag
-    S = np.nan_to_num(S, nan=0.0)
-    print(S)
-    """
-    Implements Classical Multidimensional Scaling.
-    
-    Parameters:
-    - S: nxn similarity matrix (where S_ii = 1)
-    - k: Number of dimensions for the output (default 2 for x,y coordinates)
-    
-    Returns:
-    - X: nxk matrix of coordinates
-    """
-    
+    S = np.nan_to_num(S, nan=0.0)  
 
     D_sq = 2 - 2 * S
 
@@ -186,8 +160,6 @@ data = np.load('simMatrix.npy')
 X = mds(data)
 
 plot_mep_clusters(X,countries,epgs)
-
-
 
 #print(row1)
 #print(row2)
